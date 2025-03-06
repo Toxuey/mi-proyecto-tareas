@@ -20,9 +20,12 @@ jobs:
 
       - name: 📦 Instalar dependencias
         run: npm install
+        working-directory: scripts
 
       - name: 🔑 Configurar credenciales de Firebase
         run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > serviceAccount.json
+        working-directory: scripts
 
       - name: 🚀 Ejecutar script de notificaciones
         run: node enviarNotificaciones.js
+        working-directory: scripts
