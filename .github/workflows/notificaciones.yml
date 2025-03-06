@@ -24,17 +24,21 @@ jobs:
           npm install moment-timezone  # Agregar esta línea para instalar moment-timezone
         working-directory: scripts
 
-      - name: 📂 Crear el directorio 'scripts' si no existe
-        run: mkdir -p scripts
+      - name: 📂 Verificar el directorio 'scripts'
+        run: |
+          echo "Verificando el directorio scripts..."
+          ls -l scripts
 
       - name: 🔑 Configurar credenciales de Firebase
-        run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' | base64 --decode > scripts/serviceAccount.json
-        working-directory: scripts
+        run: |
+          mkdir -p scripts  # Asegúrate de que el directorio 'scripts' exista
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' | base64 --decode > scripts/serviceAccount.json
+        working-directory: ${{ github.workspace }}
 
       - name: 👀 Verificar el contenido del archivo serviceAccount.json
         run: cat scripts/serviceAccount.json
-        working-directory: scripts
 
       - name: 🚀 Ejecutar script de notificaciones
         run: node scripts/enviarNotificaciones.js
         working-directory: scripts
+
