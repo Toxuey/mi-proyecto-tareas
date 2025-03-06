@@ -2,7 +2,7 @@ name: Enviar Notificaciones
 
 on:
   schedule:
-    - cron: "*/15 12-23 * * *"  # Ejecutar cada 15 min entre 7 AM y 7 PM en Bogotá
+    - cron: "0 12-23 * * *"  # Cada hora entre 7 AM y 7 PM en Bogotá (Bogotá = UTC-5)
   workflow_dispatch:  # Permite ejecutarlo manualmente
 
 jobs:
@@ -10,31 +10,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 Clonar repositorio
+      - name: 📥 Clonar repositorio (solo scripts)
         uses: actions/checkout@v4
+        with:
+          sparse-checkout: scripts
 
       - name: 🛠️ Configurar Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
+          cache: npm
 
-      - name: 📦 Instalar dependencias
-        run: |
-          npm install
-          npm install moment-timezone  # Agregar esta línea para instalar moment-timezone
-          npm install firebase-admin  # Agregar esta línea para instalar firebase-admin
-          npm install axios  # Instalar axios para la creación del notification_key
+      - name: 📦 Instalar dependencias necesarias
+        run: npm ci
         working-directory: scripts
 
       - name: 🔑 Configurar credenciales de Firebase
-        run: |
-          mkdir -p scripts  # Asegúrate de que el directorio 'scripts' exista
-          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' | base64 --decode > scripts/serviceAccount.json
-        working-directory: ${{ github.workspace }}
-
-      - name: 👀 Verificar el contenido del archivo serviceAccount.json
-        run: cat scripts/serviceAccount.json
+        run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' | base64 --decode > scripts/serviceAccount.json
 
       - name: 🚀 Ejecutar script de notificaciones
-        run: node enviarNotificaciones.js
-        working-directory: scripts
+        run: node scripts/enviarNotificaciones.js
