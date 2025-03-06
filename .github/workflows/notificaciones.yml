@@ -10,23 +10,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 Clonar repositorio (solo scripts)
+      - name: 📥 Clonar repositorio
         uses: actions/checkout@v4
-        with:
-          sparse-checkout: scripts
 
-      - name: 🛠️ Configurar Node.js
+      - name: 🛠️ Configurar Node.js y caché
         uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: npm
+          cache: npm  # Habilita caché para dependencias
 
-      - name: 📦 Instalar dependencias necesarias
-        run: npm ci
-        working-directory: scripts
+      - name: 📦 Instalar dependencias
+        run: npm ci  # Instalación más rápida y confiable
 
       - name: 🔑 Configurar credenciales de Firebase
-        run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' | base64 --decode > scripts/serviceAccount.json
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' | base64 --decode > scripts/serviceAccount.json
+          chmod 600 scripts/serviceAccount.json  # Asegurar permisos correctos
 
       - name: 🚀 Ejecutar script de notificaciones
         run: node scripts/enviarNotificaciones.js
