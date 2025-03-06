@@ -7,6 +7,7 @@ const moment = require('moment-timezone');
 const serviceAccountPath = path.join(__dirname, 'serviceAccount.json');
 const serviceAccountContent = fs.readFileSync(serviceAccountPath, 'utf8');
 
+// Depuración temporal para ver el contenido de serviceAccount.json
 console.log("Contenido de serviceAccount.json:", serviceAccountContent); // TEMPORAL para depuración
 
 const serviceAccount = JSON.parse(serviceAccountContent);
@@ -82,12 +83,25 @@ async function enviarNotificaciones() {
           tokens: uniqueTokens  // Usamos los tokens únicos
         };
 
-        try {
-          console.log("Enviando mensaje:", message);
-          const response = await messaging.sendMulticast(message);
-          console.log(`✅ Notificación enviada para la tarea: ${tarea.text}`, response);
-        } catch (error) {
-          console.error('Error al enviar notificación:', error);
+        // Verificar si hay más de 1000 tokens
+        const chunkSize = 1000;
+        for (let i = 0; i < uniqueTokens.length; i += chunkSize) {
+          const chunk = uniqueTokens.slice(i, i + chunkSize);
+          const message = {
+            notification: {
+              title: 'Recordatorio de tarea',
+              body: `Tienes pendiente: ${tarea.text} a las ${tarea.time}`
+            },
+            tokens: chunk
+          };
+
+          try {
+            console.log("Enviando mensaje:", message);
+            const response = await messaging.sendMulticast(message);
+            console.log(`✅ Notificación enviada para la tarea: ${tarea.text}`, response);
+          } catch (error) {
+            console.error('Error al enviar notificación:', error);
+          }
         }
       } else {
         console.log('No es la hora para enviar la notificación de la tarea:', tarea.text);
@@ -99,7 +113,6 @@ async function enviarNotificaciones() {
 }
 
 enviarNotificaciones();
-
 
 
 
