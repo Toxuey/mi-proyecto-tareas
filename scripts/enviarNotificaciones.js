@@ -27,20 +27,20 @@ async function enviarNotificaciones() {
     
     if (!tareas) {
       console.log('No hay tareas');
-      process.exit(0);  // Termina el proceso si no hay tareas
+      process.exit(0);
       return;
     }
 
     console.log('Tareas obtenidas:', tareas);
-    const ahora = moment().tz('America/Bogota');  // Usa la zona horaria correcta
+    const ahora = moment().tz('America/Bogota');
     const horaActual = ahora.format('HH:mm');
     const fechaActual = ahora.format('YYYY-MM-DD');
-    const horaLimite = ahora.add(15, 'minutes').format('HH:mm');
+    const horaLimite = ahora.add(1, 'hour').format('HH:mm'); // Ahora verifica tareas que vencen en 1 hora
 
     console.log('Hora actual:', horaActual);
     console.log('Hora límite para la notificación:', horaLimite);
 
-    let notificacionesEnviadas = 0;  // Para llevar la cuenta de las notificaciones enviadas
+    let notificacionesEnviadas = 0;
 
     for (const [id, tarea] of Object.entries(tareas)) {
       console.log('Revisando tarea:', tarea.text);
@@ -53,6 +53,7 @@ async function enviarNotificaciones() {
       console.log('Fecha y hora actuales:', fechaActual, horaActual, horaLimite);
       console.log('Tarea:', tarea.date, tarea.time);
 
+      // Enviar notificación si la tarea vence dentro de la próxima hora
       if (tarea.date === fechaActual && tarea.time >= horaActual && tarea.time <= horaLimite) {
         console.log(`¡Es hora de enviar la notificación para: ${tarea.text}!`);
 
@@ -61,7 +62,7 @@ async function enviarNotificaciones() {
             title: 'Recordatorio de tarea',
             body: `Tienes pendiente: ${tarea.text} a las ${tarea.time}`
           },
-          token: notificationKey  // Enviar notificación al grupo
+          token: notificationKey
         };
 
         try {
@@ -92,3 +93,4 @@ async function enviarNotificaciones() {
 }
 
 enviarNotificaciones();
+
