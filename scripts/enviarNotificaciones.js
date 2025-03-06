@@ -7,6 +7,9 @@ const moment = require('moment-timezone');
 const serviceAccountPath = path.join(__dirname, 'serviceAccount.json');
 const serviceAccountContent = fs.readFileSync(serviceAccountPath, 'utf8');
 
+// Depuración temporal para ver el contenido de serviceAccount.json
+console.log("Contenido de serviceAccount.json:", serviceAccountContent); // TEMPORAL para depuración
+
 const serviceAccount = JSON.parse(serviceAccountContent);
 
 admin.initializeApp({
@@ -14,6 +17,7 @@ admin.initializeApp({
   databaseURL: 'https://apptareasfamiliavd-default-rtdb.firebaseio.com'
 });
 
+const db = admin.firestore();
 const messaging = admin.messaging();
 
 async function enviarNotificaciones() {
@@ -42,6 +46,7 @@ async function enviarNotificaciones() {
     console.log('Token de prueba:', token);
 
     // Recorremos todas las tareas
+    let notificacionesEnviadas = 0;  // Para llevar la cuenta de las notificaciones enviadas
     for (const [id, tarea] of Object.entries(tareas)) {
       console.log('Revisando tarea:', tarea.text);
 
@@ -55,33 +60,37 @@ async function enviarNotificaciones() {
       console.log('Tarea:', tarea.date, tarea.time);
 
       if (tarea.date === fechaActual && tarea.time >= horaActual && tarea.time <= horaLimite) {
-        console.log(`¡Es hora de enviar el mensaje para: ${tarea.text}!`);
+        console.log(`¡Es hora de enviar la notificación para: ${tarea.text}!`);
 
         const message = {
-          data: {  // Enviar solo datos, sin notificación predeterminada
+          data: {  // Usamos data para evitar la notificación predeterminada
             title: 'Recordatorio de tarea',
-            body: `Tienes pendiente: ${tarea.text} a las ${tarea.time}`,
-            taskId: id,  // Puedes incluir información adicional si lo necesitas
+            body: `Tienes pendiente: ${tarea.text} a las ${tarea.time}`
           },
-          token: token,  // Usamos el token proporcionado
+          token: token  // Usamos el token proporcionado
         };
 
         try {
           console.log("Enviando mensaje:", message);
           const response = await messaging.send(message);
-          console.log(`✅ Mensaje enviado para la tarea: ${tarea.text}`, response);
+          console.log(`✅ Notificación enviada para la tarea: ${tarea.text}`, response);
+          notificacionesEnviadas++;  // Aumentamos el contador de notificaciones enviadas
         } catch (error) {
-          console.error('Error al enviar el mensaje:', error);
+          console.error('Error al enviar notificación:', error);
         }
       } else {
-        console.log('No es la hora para enviar el mensaje de la tarea:', tarea.text);
+        console.log('No es la hora para enviar la notificación de la tarea:', tarea.text);
       }
     }
 
-    console.log('Proceso de notificaciones completado.');  // Mensaje al final del ciclo
+    if (notificacionesEnviadas > 0) {
+      console.log(`Proceso de notificaciones completado. Se enviaron ${notificacionesEnviadas} notificaciones.`);
+    } else {
+      console.log('No se enviaron notificaciones.');
+    }
 
   } catch (error) {
-    console.error('⚠️ Error enviando mensajes:', error);
+    console.error('⚠️ Error enviando notificaciones:', error);
   }
 }
 
