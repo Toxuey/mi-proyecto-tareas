@@ -2,8 +2,8 @@ name: Enviar Notificaciones
 
 on:
   schedule:
-    - cron: "*/15 * * * *"  # Ejecutar cada 15 minutos
-  workflow_dispatch:  # Permite ejecutarlo manualmente desde GitHub Actions
+    - cron: "*/15 12-23 * * *"  # Ejecutar cada 15 min entre 7 AM y 7 PM en Bogotá
+  workflow_dispatch:  # Permite ejecutarlo manualmente
 
 jobs:
   send_notifications:
