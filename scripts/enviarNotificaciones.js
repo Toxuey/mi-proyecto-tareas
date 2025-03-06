@@ -65,7 +65,3 @@ async function enviarNotificaciones() {
 }
 
 enviarNotificaciones();
-
-
-enviarNotificaciones();
-
