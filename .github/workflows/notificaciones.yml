@@ -39,6 +39,7 @@ jobs:
         run: cat scripts/serviceAccount.json
 
       - name: 🚀 Ejecutar script de notificaciones
-        run: node scripts/enviarNotificaciones.js
+        run: node enviarNotificaciones.js
         working-directory: scripts
+
 
