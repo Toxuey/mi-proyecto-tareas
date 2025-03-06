@@ -54,7 +54,10 @@ async function enviarNotificaciones() {
       return;
     }
 
-    console.log('Tokens obtenidos:', tokens);
+    // Eliminar duplicados de la lista de tokens
+    const uniqueTokens = [...new Set(tokens)];
+
+    console.log('Tokens obtenidos:', uniqueTokens);
 
     for (const [id, tarea] of Object.entries(tareas)) {
       console.log('Revisando tarea:', tarea.text);
@@ -76,7 +79,7 @@ async function enviarNotificaciones() {
             title: 'Recordatorio de tarea',
             body: `Tienes pendiente: ${tarea.text} a las ${tarea.time}`
           },
-          tokens: tokens
+          tokens: uniqueTokens  // Usamos los tokens únicos
         };
 
         try {
@@ -96,6 +99,7 @@ async function enviarNotificaciones() {
 }
 
 enviarNotificaciones();
+
 
 
 
