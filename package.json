@@ -1,15 +1,14 @@
 {
   "name": "notificaciones",
   "version": "1.0.0",
-  "type": "module",
   "dependencies": {
     "firebase-admin": "^11.10.1",
-    "moment-timezone": "^0.5.45"  // Agregamos moment-timezone
+    "moment-timezone": "^0.5.45"
   },
   "scripts": {
-    "start": "node enviarNotificaciones.js"
+    "start": "node scripts/enviarNotificaciones.js"
   },
   "engines": {
-    "node": ">=18"  // Asegura compatibilidad con GitHub Actions
+    "node": ">=18"
   }
 }
