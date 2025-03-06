@@ -45,6 +45,10 @@ async function enviarNotificaciones() {
 
     console.log('Tokens de prueba:', tokens);
 
+    // Crear y mostrar la notification_key usando los tokens
+    const notificationKey = await crearNotificationKey(tokens);
+    console.log('Notification Key generada:', notificationKey);
+
     // Recorremos todas las tareas
     let notificacionesEnviadas = 0;  // Para llevar la cuenta de las notificaciones enviadas
     for (const [id, tarea] of Object.entries(tareas)) {
@@ -97,7 +101,20 @@ async function enviarNotificaciones() {
   }
 }
 
-enviarNotificaciones();
+// Función para crear la notification_key
+async function crearNotificationKey(tokens) {
+  try {
+    // Crea la notification_key con los tokens
+    const response = await messaging.subscribeToTopic(tokens, 'tarea_reminder');
+    const notificationKey = response.results[0].registrationToken;
+    
+    return notificationKey;
+  } catch (error) {
+    console.error('Error al crear la notification key:', error);
+    throw error;
+  }
+}
 
+enviarNotificaciones();
 
 
