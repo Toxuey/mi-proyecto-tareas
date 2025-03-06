@@ -2,23 +2,27 @@ name: Enviar Notificaciones
 
 on:
   schedule:
-    - cron: '*/15 * * * *'  # Ejecutar cada 15 minutos
-  workflow_dispatch:  # Permite ejecución manual desde GitHub Actions
+    - cron: "*/15 * * * *"  # Ejecutar cada 15 minutos
+  workflow_dispatch:  # Permite ejecutarlo manualmente desde GitHub Actions
 
 jobs:
-  send-notifications:
-    runs-on: ubuntu-latest  # Usa Linux para ahorrar minutos
+  send_notifications:
+    runs-on: ubuntu-latest
+
     steps:
       - name: 📥 Clonar repositorio
         uses: actions/checkout@v4
-      
+
       - name: 🛠️ Configurar Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18  # Usa Node.js 18
+          node-version: 18
 
       - name: 📦 Instalar dependencias
         run: npm install
 
+      - name: 🔑 Configurar credenciales de Firebase
+        run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > serviceAccount.json
+
       - name: 🚀 Ejecutar script de notificaciones
-        run: node scripts/enviarNotificaciones.js
+        run: node enviarNotificaciones.js
