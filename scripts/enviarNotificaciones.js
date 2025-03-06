@@ -39,6 +39,23 @@ async function enviarNotificaciones() {
     console.log('Hora actual:', horaActual);
     console.log('Hora límite para la notificación:', horaLimite);
 
+    // Obtener todos los usuarios y sus tokens
+    const usersSnapshot = await db.collection('users').get();
+    const tokens = [];
+    usersSnapshot.forEach((doc) => {
+      const userData = doc.data();
+      if (userData.tokens) {
+        tokens.push(...userData.tokens);  // Agrega todos los tokens de cada usuario
+      }
+    });
+
+    if (tokens.length === 0) {
+      console.log('No hay tokens registrados.');
+      return;
+    }
+
+    console.log('Tokens obtenidos:', tokens);
+
     for (const [id, tarea] of Object.entries(tareas)) {
       console.log('Revisando tarea:', tarea.text);
 
@@ -53,21 +70,6 @@ async function enviarNotificaciones() {
 
       if (tarea.date === fechaActual && tarea.time >= horaActual && tarea.time <= horaLimite) {
         console.log(`¡Es hora de enviar la notificación para: ${tarea.text}!`);
-
-        const userRef = db.collection('users').doc(tarea.createdBy);
-        const userSnap = await userRef.get();
-        
-        if (!userSnap.exists) {
-          console.log('No se encontró el usuario:', tarea.createdBy);
-          continue;
-        }
-
-        const { tokens } = userSnap.data();
-        console.log('Tokens de usuario:', tokens);
-        if (!tokens || tokens.length === 0) {
-          console.log('No hay tokens de notificación para el usuario:', tarea.createdBy);
-          continue;
-        }
 
         const message = {
           notification: {
