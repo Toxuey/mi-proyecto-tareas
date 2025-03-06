@@ -6,9 +6,6 @@ const path = require('path');
 const serviceAccountPath = path.join(__dirname, 'serviceAccount.json');
 const serviceAccountContent = fs.readFileSync(serviceAccountPath, 'utf8');
 
-// Verificar el contenido de serviceAccount.json para depuración (debe eliminarse después)
-console.log("Contenido de serviceAccount.json:", serviceAccountContent); // TEMPORAL para depuración
-
 const serviceAccount = JSON.parse(serviceAccountContent);
 
 admin.initializeApp({
@@ -21,69 +18,54 @@ const messaging = admin.messaging();
 
 async function enviarNotificaciones() {
   try {
-    // Obtener las tareas de Realtime Database
-    console.log("Consultando tareas...");
+    console.log('Consultando tareas...');
     const snapshot = await admin.database().ref('tareas').once('value');
     const tareas = snapshot.val();
-    console.log("Tareas obtenidas:", tareas);
-    
     if (!tareas) return;
 
+    console.log('Tareas obtenidas:', tareas);
+
     const ahora = new Date();
-    ahora.setMinutes(ahora.getMinutes() + 15); // Notificar 15 minutos antes
-    const horaNotificacion = ahora.toTimeString().slice(0, 5);
-    const fechaNotificacion = ahora.toISOString().split('T')[0];
+    const fechaActual = ahora.toISOString().split('T')[0]; // Solo la fecha (YYYY-MM-DD)
+    const horaActual = ahora.toTimeString().slice(0, 5); // Solo la hora (HH:MM)
+    
+    // Calcular la hora límite, es decir, 15 minutos después de la hora actual
+    const ahoraLimite = new Date(ahora.getTime() + 15 * 60000); // 15 minutos después
+    const horaLimite = ahoraLimite.toTimeString().slice(0, 5);
 
-    // Iterar sobre cada tarea
+    console.log("Hora actual:", horaActual);
+    console.log("Hora límite para la notificación:", horaLimite);
+
+    // Recorremos las tareas
     for (const [id, tarea] of Object.entries(tareas)) {
-      console.log(`Revisando tarea: ${tarea.text}`);
-      
-      // Si la tarea está completada, ignorar
-      if (tarea.completed) {
-        console.log(`Tarea completada: ${tarea.text}`);
-        continue;
-      }
+      if (tarea.completed) continue; // Ignorar tareas completadas
 
-      // Verificar si la fecha y hora coinciden
-      if (tarea.date === fechaNotificacion && tarea.time === horaNotificacion) {
-        console.log("Notificación programada para la tarea:", tarea.text);
+      // Comprobar si la tarea está dentro del rango de tiempo (entre la hora actual y la hora límite)
+      const tareaHora = tarea.time;
+      const tareaFecha = tarea.date;
 
-        // Consultar el usuario asociado a la tarea
+      if (tareaFecha === fechaActual && tareaHora >= horaActual && tareaHora <= horaLimite) {
+        // Si la tarea está dentro del rango, enviamos la notificación
         const userRef = db.collection('users').doc(tarea.createdBy);
-        console.log("Consultando datos del usuario:", tarea.createdBy);
         const userSnap = await userRef.get();
-        
-        if (!userSnap.exists) {
-          console.log(`Usuario no encontrado: ${tarea.createdBy}`);
-          continue;
-        }
+        if (!userSnap.exists) continue;
 
         const { tokens } = userSnap.data();
-        if (!tokens || tokens.length === 0) {
-          console.log(`No hay tokens para el usuario: ${tarea.createdBy}`);
-          continue;
-        }
+        if (!tokens || tokens.length === 0) continue;
 
-        console.log(`Enviando notificación a ${tokens.length} tokens para la tarea: ${tarea.text}`);
-        
-        // Enviar la notificación a los tokens
         const message = {
           notification: {
             title: 'Recordatorio de tarea',
             body: `Tienes pendiente: ${tarea.text} a las ${tarea.time}`
           },
-          tokens: tokens // Usar todos los tokens del usuario
+          tokens: tokens
         };
 
-        // Enviar notificaciones en paralelo utilizando Promise.all
-        try {
-          const response = await messaging.sendMulticast(message);
-          console.log(`✅ Notificación enviada para la tarea: ${tarea.text}`, response);
-        } catch (error) {
-          console.error('⚠️ Error enviando la notificación:', error);
-        }
+        // Usar sendMulticast para enviar a varios tokens
+        const response = await messaging.sendMulticast(message);
+        console.log(`✅ Notificación enviada para la tarea: ${tarea.text}`, response);
       } else {
-        console.log("No es la hora para enviar la notificación.");
+        console.log(`No es la hora para enviar la notificación de la tarea: ${tarea.text}`);
       }
     }
   } catch (error) {
@@ -92,6 +74,5 @@ async function enviarNotificaciones() {
 }
 
 enviarNotificaciones();
-
 
 
