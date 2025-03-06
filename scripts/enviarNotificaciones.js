@@ -7,9 +7,6 @@ const moment = require('moment-timezone');
 const serviceAccountPath = path.join(__dirname, 'serviceAccount.json');
 const serviceAccountContent = fs.readFileSync(serviceAccountPath, 'utf8');
 
-// Depuración temporal para ver el contenido de serviceAccount.json
-console.log("Contenido de serviceAccount.json:", serviceAccountContent); // TEMPORAL para depuración
-
 const serviceAccount = JSON.parse(serviceAccountContent);
 
 admin.initializeApp({
@@ -41,10 +38,13 @@ async function enviarNotificaciones() {
     console.log('Hora actual:', horaActual);
     console.log('Hora límite para la notificación:', horaLimite);
 
-    // Token de prueba que proporcionaste
-    const token = "c5i5uzAdA6G167XXjdEsLY:APA91bGo-Tpkp5jyk7KAdydlXbfae_ynZO_lAUt9ArGJcOzSt4S2KmprulJyQsUrhWYqona2RzNGi_Vv-Fld0hEWgp8nP7WKgZXr1VsKzbbS3NPMntIzGao";
+    // Definir los dos tokens
+    const tokens = [
+      "c5i5uzAdA6G167XXjdEsLY:APA91bGo-Tpkp5jyk7KAdydlXbfae_ynZO_lAUt9ArGJcOzSt4S2KmprulJyQsUrhWYqona2RzNGi_Vv-Fld0hEWgp8nP7WKgZXr1VsKzbbS3NPMntIzGao",
+      "fpS7cWWTvEIQoVbfrgC93B:APA91bEurJNPyGYmS8NUwMeOjJxlV-UKPRp6p7wt7ys4LZDoOSS1MHo7ceZtqhddpewU-WxRQZ50MQgnmk7oeZ5SRghJLONsiG2RBSSTb-P1UWTKBOwE9jk"
+    ];
 
-    console.log('Token de prueba:', token);
+    console.log('Tokens de prueba:', tokens);
 
     // Recorremos todas las tareas
     let notificacionesEnviadas = 0;  // Para llevar la cuenta de las notificaciones enviadas
@@ -68,12 +68,12 @@ async function enviarNotificaciones() {
             title: 'Recordatorio de tarea',
             body: `Tienes pendiente: ${tarea.text} a las ${tarea.time}`
           },
-          token: token  // Usamos el token proporcionado
+          tokens: tokens  // Usamos ambos tokens en el arreglo
         };
 
         try {
           console.log("Enviando mensaje:", message);
-          const response = await messaging.send(message);
+          const response = await messaging.sendMulticast(message);
           console.log(`✅ Notificación enviada para la tarea: ${tarea.text}`, response);
           notificacionesEnviadas++;  // Aumentamos el contador de notificaciones enviadas
         } catch (error) {
@@ -99,5 +99,6 @@ async function enviarNotificaciones() {
 }
 
 enviarNotificaciones();
+
 
 
