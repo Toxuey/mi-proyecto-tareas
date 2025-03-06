@@ -19,8 +19,8 @@ jobs:
           node-version: 18
           cache: npm  # Habilita caché para dependencias
 
-      - name: 📦 Generar package-lock.json
-        run: npm install
+      - name: 📦 Instalar dependencias
+        run: npm ci  # Instalación más rápida y confiable
 
       - name: 🔑 Configurar credenciales de Firebase
         run: |
