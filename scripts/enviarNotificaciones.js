@@ -45,6 +45,7 @@ async function enviarNotificaciones() {
 
     console.log('Token de prueba:', token);
 
+    // Recorremos todas las tareas
     for (const [id, tarea] of Object.entries(tareas)) {
       console.log('Revisando tarea:', tarea.text);
 
@@ -79,12 +80,16 @@ async function enviarNotificaciones() {
         console.log('No es la hora para enviar la notificación de la tarea:', tarea.text);
       }
     }
+
+    console.log('Proceso de notificaciones completado.');  // Mensaje al final del ciclo
+
   } catch (error) {
     console.error('⚠️ Error enviando notificaciones:', error);
   }
 }
 
 enviarNotificaciones();
+
 
 
 
