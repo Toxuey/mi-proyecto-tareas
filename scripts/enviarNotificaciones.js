@@ -1,8 +1,15 @@
 const admin = require('firebase-admin');
-const fetch = require('node-fetch');
+const fs = require('fs');
+const path = require('path');
 
-// Cargar credenciales desde las variables de entorno en GitHub Actions
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+// Leer las credenciales desde el archivo serviceAccount.json
+const serviceAccountPath = path.join(__dirname, 'serviceAccount.json');
+const serviceAccountContent = fs.readFileSync(serviceAccountPath, 'utf8');
+
+console.log("Contenido de serviceAccount.json:", serviceAccountContent); // TEMPORAL para depuración
+
+const serviceAccount = JSON.parse(serviceAccountContent);
+
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: 'https://apptareasfamiliavd-default-rtdb.firebaseio.com'
@@ -40,8 +47,9 @@ async function enviarNotificaciones() {
           tokens: tokens
         };
 
-        await messaging.sendEachForMulticast(message);
-        console.log(`✅ Notificación enviada para la tarea: ${tarea.text}`);
+        // Usar sendMulticast para enviar a varios tokens
+        const response = await messaging.sendMulticast(message);
+        console.log(`✅ Notificación enviada para la tarea: ${tarea.text}`, response);
       }
     }
   } catch (error) {
@@ -50,4 +58,5 @@ async function enviarNotificaciones() {
 }
 
 enviarNotificaciones();
+
 
