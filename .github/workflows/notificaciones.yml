@@ -23,9 +23,7 @@ jobs:
         run: npm ci  # Instalación más rápida y confiable
 
       - name: 🔑 Configurar credenciales de Firebase
-        run: |
-          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' | base64 --decode > scripts/serviceAccount.json
-          chmod 600 scripts/serviceAccount.json  # Asegurar permisos correctos
+        run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > scripts/serviceAccount.json
 
       - name: 🚀 Ejecutar script de notificaciones
         run: node scripts/enviarNotificaciones.js
