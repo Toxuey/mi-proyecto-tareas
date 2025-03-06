@@ -1,16 +1,19 @@
 const admin = require('firebase-admin');
+const fs = require('fs');
+const path = require('path');
 const moment = require('moment-timezone');
 
-// Inicializar Firebase con credenciales desde GitHub Actions
+// Leer las credenciales desde el archivo serviceAccount.json
+const serviceAccountPath = path.join(__dirname, 'serviceAccount.json');
+const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+
+// Inicializar Firebase
 admin.initializeApp({
-  credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_CREDENTIALS)),
+  credential: admin.credential.cert(serviceAccount),
   databaseURL: 'https://apptareasfamiliavd-default-rtdb.firebaseio.com'
 });
 
-const db = admin.firestore();
 const messaging = admin.messaging();
-
-// Notification Key del grupo de dispositivos
 const notificationKey = "APA91bEn2LDy4uoVjw7t-KhfWg3EzQQrL1cQoDIfXFYSdKwfetXdsaqI3nF5EePWuEhBVilcvH0bXND5a050wW1fwSGCtpOxaTpoZI7faSlMQoLUr-b9X7o";
 
 async function enviarNotificaciones() {
@@ -28,7 +31,7 @@ async function enviarNotificaciones() {
     const ahora = moment().tz('America/Bogota');
     const horaActual = ahora.format('HH:mm');
     const fechaActual = ahora.format('YYYY-MM-DD');
-    const horaLimite = ahora.clone().add(1, 'hour').format('HH:mm'); // Revisión cada hora
+    const horaLimite = ahora.clone().add(1, 'hour').format('HH:mm');
 
     console.log(`🕒 Hora actual: ${horaActual} | Notificación hasta: ${horaLimite}`);
 
@@ -52,7 +55,6 @@ async function enviarNotificaciones() {
       token: notificationKey
     }));
 
-    // Enviar todas las notificaciones en paralelo
     const responses = await Promise.all(mensajes.map(msg => messaging.send(msg)));
 
     console.log(`✅ Se enviaron ${responses.length} notificaciones con éxito.`);
