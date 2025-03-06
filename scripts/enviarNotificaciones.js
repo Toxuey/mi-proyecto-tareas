@@ -1,6 +1,7 @@
 const admin = require('firebase-admin');
 const fs = require('fs');
 const path = require('path');
+const moment = require('moment-timezone');  // Importar moment-timezone
 
 // Leer las credenciales desde el archivo serviceAccount.json
 const serviceAccountPath = path.join(__dirname, 'serviceAccount.json');
@@ -25,13 +26,14 @@ async function enviarNotificaciones() {
 
     console.log('Tareas obtenidas:', tareas);
 
-    const ahora = new Date();
-    const fechaActual = ahora.toISOString().split('T')[0]; // Solo la fecha (YYYY-MM-DD)
-    const horaActual = ahora.toTimeString().slice(0, 5); // Solo la hora (HH:MM)
+    // Usar moment-timezone para establecer la zona horaria correcta (por ejemplo, "America/Bogota")
+    const ahora = moment.tz("America/Bogota"); // Reemplaza con tu zona horaria
+    const fechaActual = ahora.format('YYYY-MM-DD'); // Fecha en formato YYYY-MM-DD
+    const horaActual = ahora.format('HH:mm'); // Hora en formato HH:mm
     
     // Calcular la hora límite, es decir, 15 minutos después de la hora actual
-    const ahoraLimite = new Date(ahora.getTime() + 15 * 60000); // 15 minutos después
-    const horaLimite = ahoraLimite.toTimeString().slice(0, 5);
+    const ahoraLimite = ahora.clone().add(15, 'minutes'); // 15 minutos después
+    const horaLimite = ahoraLimite.format('HH:mm'); // Hora límite en formato HH:mm
 
     console.log("Hora actual:", horaActual);
     console.log("Hora límite para la notificación:", horaLimite);
