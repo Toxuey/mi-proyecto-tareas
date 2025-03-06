@@ -28,6 +28,7 @@ async function enviarNotificaciones() {
     
     if (!tareas) {
       console.log('No hay tareas');
+      process.exit(0);  // Termina el proceso si no hay tareas
       return;
     }
 
@@ -89,8 +90,11 @@ async function enviarNotificaciones() {
       console.log('No se enviaron notificaciones.');
     }
 
+    process.exit(0);  // Termina el proceso exitosamente
+
   } catch (error) {
     console.error('⚠️ Error enviando notificaciones:', error);
+    process.exit(1);  // Si hay error, termina el proceso con un código diferente
   }
 }
 
