@@ -1,15 +1,9 @@
 const admin = require('firebase-admin');
-const fs = require('fs');
-const path = require('path');
 const moment = require('moment-timezone');
 
-// Leer las credenciales desde el archivo serviceAccount.json
-const serviceAccountPath = path.join(__dirname, 'serviceAccount.json');
-const serviceAccountContent = fs.readFileSync(serviceAccountPath, 'utf8');
-const serviceAccount = JSON.parse(serviceAccountContent);
-
+// Inicializar Firebase con credenciales desde GitHub Actions
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+  credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_CREDENTIALS)),
   databaseURL: 'https://apptareasfamiliavd-default-rtdb.firebaseio.com'
 });
 
@@ -21,69 +15,47 @@ const notificationKey = "APA91bEn2LDy4uoVjw7t-KhfWg3EzQQrL1cQoDIfXFYSdKwfetXdsaq
 
 async function enviarNotificaciones() {
   try {
-    console.log('Consultando tareas...');
+    console.log('📌 Consultando tareas...');
     const snapshot = await admin.database().ref('tareas').once('value');
     const tareas = snapshot.val();
-    
+
     if (!tareas) {
-      console.log('No hay tareas');
+      console.log('✅ No hay tareas pendientes.');
       process.exit(0);
       return;
     }
 
-    console.log('Tareas obtenidas:', tareas);
     const ahora = moment().tz('America/Bogota');
     const horaActual = ahora.format('HH:mm');
     const fechaActual = ahora.format('YYYY-MM-DD');
-    const horaLimite = ahora.add(1, 'hour').format('HH:mm'); // Ahora verifica tareas que vencen en 1 hora
+    const horaLimite = ahora.clone().add(1, 'hour').format('HH:mm'); // Revisión cada hora
 
-    console.log('Hora actual:', horaActual);
-    console.log('Hora límite para la notificación:', horaLimite);
+    console.log(`🕒 Hora actual: ${horaActual} | Notificación hasta: ${horaLimite}`);
 
-    let notificacionesEnviadas = 0;
+    const tareasFiltradas = Object.values(tareas).filter(tarea => 
+      !tarea.completed && tarea.date === fechaActual && tarea.time >= horaActual && tarea.time <= horaLimite
+    );
 
-    for (const [id, tarea] of Object.entries(tareas)) {
-      console.log('Revisando tarea:', tarea.text);
-
-      if (tarea.completed) {
-        console.log('Tarea ya completada:', tarea.text);
-        continue;
-      }
-
-      console.log('Fecha y hora actuales:', fechaActual, horaActual, horaLimite);
-      console.log('Tarea:', tarea.date, tarea.time);
-
-      // Enviar notificación si la tarea vence dentro de la próxima hora
-      if (tarea.date === fechaActual && tarea.time >= horaActual && tarea.time <= horaLimite) {
-        console.log(`¡Es hora de enviar la notificación para: ${tarea.text}!`);
-
-        const message = {
-          data: {
-            title: 'Recordatorio de tarea',
-            body: `Tienes pendiente: ${tarea.text} a las ${tarea.time}`
-          },
-          token: notificationKey
-        };
-
-        try {
-          console.log("Enviando mensaje:", message);
-          const response = await messaging.send(message);
-          console.log(`✅ Notificación enviada para la tarea: ${tarea.text}`, response);
-          notificacionesEnviadas++;
-        } catch (error) {
-          console.error('Error al enviar notificación:', error);
-        }
-      } else {
-        console.log('No es la hora para enviar la notificación de la tarea:', tarea.text);
-      }
+    if (tareasFiltradas.length === 0) {
+      console.log('✅ No hay tareas próximas a vencer.');
+      process.exit(0);
+      return;
     }
 
-    if (notificacionesEnviadas > 0) {
-      console.log(`Proceso de notificaciones completado. Se enviaron ${notificacionesEnviadas} notificaciones.`);
-    } else {
-      console.log('No se enviaron notificaciones.');
-    }
+    console.log(`🚀 Se enviarán ${tareasFiltradas.length} notificaciones.`);
 
+    const mensajes = tareasFiltradas.map(tarea => ({
+      data: {
+        title: 'Recordatorio de tarea',
+        body: `Tienes pendiente: ${tarea.text} a las ${tarea.time}`
+      },
+      token: notificationKey
+    }));
+
+    // Enviar todas las notificaciones en paralelo
+    const responses = await Promise.all(mensajes.map(msg => messaging.send(msg)));
+
+    console.log(`✅ Se enviaron ${responses.length} notificaciones con éxito.`);
     process.exit(0);
 
   } catch (error) {
@@ -91,6 +63,9 @@ async function enviarNotificaciones() {
     process.exit(1);
   }
 }
+
+enviarNotificaciones();
+
 
 enviarNotificaciones();
 
