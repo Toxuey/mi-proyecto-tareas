@@ -40,7 +40,7 @@ async function enviarNotificaciones() {
     // Definir los dos tokens
     const tokens = [
       "c5i5uzAdA6G167XXjdEsLY:APA91bGo-Tpkp5jyk7KAdydlXbfae_ynZO_lAUt9ArGJcOzSt4S2KmprulJyQsUrhWYqona2RzNGi_Vv-Fld0hEWgp8nP7WKgZXr1VsKzbbS3NPMntIzGao",
-      "c7f9c9d4sd3k9fDkj42hwiP1wbDnpL8cdGpXh3nfdq7CgDqXQ3p8r5GJfOEShi5N_XeyzUNd3zcYqslpQQ29ZGv3S6J4Q1F4V0sjcdSkY9ckns7rI34mMv"
+      "fpS7cWWTvEIQoVbfrgC93B:APA91bEurJNPyGYmS8NUwMeOjJxlV-UKPRp6p7wt7ys4LZDoOSS1MHo7ceZtqhddpewU-WxRQZ50MQgnmk7oeZ5SRghJLONsiG2RBSSTb-P1UWTKBOwE9jk"
     ];
 
     console.log('Tokens de prueba:', tokens);
