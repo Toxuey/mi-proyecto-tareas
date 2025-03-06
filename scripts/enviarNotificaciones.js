@@ -82,14 +82,15 @@ async function enviarNotificaciones() {
     }
 
     console.log('Proceso de notificaciones completado.');  // Mensaje al final del ciclo
+    process.exit(0);  // Terminar el proceso de Node.js
 
   } catch (error) {
     console.error('⚠️ Error enviando notificaciones:', error);
+    process.exit(1);  // Si hay error, termina el proceso con un código diferente
   }
 }
 
 enviarNotificaciones();
-
 
 
 
