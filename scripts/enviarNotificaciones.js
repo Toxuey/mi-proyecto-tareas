@@ -16,6 +16,9 @@ admin.initializeApp({
 const db = admin.firestore();
 const messaging = admin.messaging();
 
+// Notification Key del grupo de dispositivos
+const notificationKey = "APA91bEn2LDy4uoVjw7t-KhfWg3EzQQrL1cQoDIfXFYSdKwfetXdsaqI3nF5EePWuEhBVilcvH0bXND5a050wW1fwSGCtpOxaTpoZI7faSlMQoLUr-b9X7o";
+
 async function enviarNotificaciones() {
   try {
     console.log('Consultando tareas...');
@@ -37,18 +40,8 @@ async function enviarNotificaciones() {
     console.log('Hora actual:', horaActual);
     console.log('Hora límite para la notificación:', horaLimite);
 
-    // Definir los dos tokens
-    const tokens = [
-      "c5i5uzAdA6G167XXjdEsLY:APA91bGo-Tpkp5jyk7KAdydlXbfae_ynZO_lAUt9ArGJcOzSt4S2KmprulJyQsUrhWYqona2RzNGi_Vv-Fld0hEWgp8nP7WKgZXr1VsKzbbS3NPMntIzGao",
-      "fpS7cWWTvEIQoVbfrgC93B:APA91bEurJNPyGYmS8NUwMeOjJxlV-UKPRp6p7wt7ys4LZDoOSS1MHo7ceZtqhddpewU-WxRQZ50MQgnmk7oeZ5SRghJLONsiG2RBSSTb-P1UWTKBOwE9jk"
-    ];
-
-    console.log('Tokens de prueba:', tokens);
-
-    // Aquí no necesitamos crear una notification key, solo enviar notificaciones directamente
-
-    // Recorremos todas las tareas
     let notificacionesEnviadas = 0;  // Para llevar la cuenta de las notificaciones enviadas
+
     for (const [id, tarea] of Object.entries(tareas)) {
       console.log('Revisando tarea:', tarea.text);
 
@@ -57,7 +50,6 @@ async function enviarNotificaciones() {
         continue;
       }
 
-      // Verifica que la tarea esté dentro del rango de tiempo
       console.log('Fecha y hora actuales:', fechaActual, horaActual, horaLimite);
       console.log('Tarea:', tarea.date, tarea.time);
 
@@ -65,18 +57,18 @@ async function enviarNotificaciones() {
         console.log(`¡Es hora de enviar la notificación para: ${tarea.text}!`);
 
         const message = {
-          data: {  // Usamos data para evitar la notificación predeterminada
+          data: {
             title: 'Recordatorio de tarea',
             body: `Tienes pendiente: ${tarea.text} a las ${tarea.time}`
           },
-          tokens: tokens  // Usamos ambos tokens en el arreglo
+          token: notificationKey  // Enviar notificación al grupo
         };
 
         try {
           console.log("Enviando mensaje:", message);
-          const response = await messaging.sendMulticast(message);
+          const response = await messaging.send(message);
           console.log(`✅ Notificación enviada para la tarea: ${tarea.text}`, response);
-          notificacionesEnviadas++;  // Aumentamos el contador de notificaciones enviadas
+          notificacionesEnviadas++;
         } catch (error) {
           console.error('Error al enviar notificación:', error);
         }
@@ -91,14 +83,12 @@ async function enviarNotificaciones() {
       console.log('No se enviaron notificaciones.');
     }
 
-    process.exit(0);  // Termina el proceso exitosamente
+    process.exit(0);
 
   } catch (error) {
     console.error('⚠️ Error enviando notificaciones:', error);
-    process.exit(1);  // Si hay error, termina el proceso con un código diferente
+    process.exit(1);
   }
 }
 
 enviarNotificaciones();
-
-
