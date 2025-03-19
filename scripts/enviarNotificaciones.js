@@ -14,7 +14,7 @@ admin.initializeApp({
 });
 
 const messaging = admin.messaging();
-const notificationKey = "APA91bEn2LDy4uoVjw7t-KhfWg3EzQQrL1cQoDIfXFYSdKwfetXdsaqI3nF5EePWuEhBVilcvH0bXND5a050wW1fwSGCtpOxaTpoZI7faSlMQoLUr-b9X7o";
+const notificationKey = "ca0bGgR7JpPrWxdNQ6P6Iz:APA91bH3uQ753gZk61wzTthngsSZ9PGP5tZBJmvJpO1gQ-g9doUpgCKWbDXnzEWEys_rmWB4mWqEQrdDhuUT5DbCRNKHzvTF_dEG3nvwwzYwrLZ7rOo6Eng";
 
 async function enviarNotificaciones() {
   try {
